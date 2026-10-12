@@ -1,0 +1,94 @@
+\documentclass[11pt,a4paper]{article}
+
+% Language and fonts
+\usepackage[english]{babel}
+\usepackage[T1]{fontenc}
+\usepackage[margin=2.5cm]{geometry}
+
+% Math
+\usepackage{amsmath, amssymb, amsthm, mathtools}
+\usepackage{bm, cancel}
+
+% Optimization problems and tableaux
+\usepackage{optidef}
+\usepackage{nicematrix}
+\usepackage{booktabs, array}
+
+% Graphics
+\usepackage{tikz}
+\usetikzlibrary{arrows.meta, positioning, quotes}
+\usepackage{pgfplots}
+\pgfplotsset{compat=1.18}
+\usepgfplotslibrary{fillbetween}
+
+% Algorithms
+\usepackage[english,ruled,vlined]{algorithm2e}
+
+% Colors and boxes
+\usepackage{xcolor}
+\usepackage[most]{tcolorbox}
+
+% Links (keep these last)
+\usepackage{hyperref}
+\usepackage{cleveref}
+
+% Shortcuts
+\newcommand{\R}{\mathbb{R}}
+\newcommand{\N}{\mathbb{N}}
+\newcommand{\Z}{\mathbb{Z}}
+\DeclareMathOperator*{\argmin}{arg\,min}
+\DeclareMathOperator*{\argmax}{arg\,max}
+
+% Theorem-like environments
+\newtheoremstyle{breakdef}{\topsep}{\topsep}{\normalfont}{}{\bfseries}{.}{\newline}{}
+\newtheoremstyle{breakplain}{\topsep}{\topsep}{\itshape}{}{\bfseries}{.}{\newline}{}
+
+\theoremstyle{breakdef}
+\newtheorem{definition}{Definition}[section]
+\newtheorem{example}{Example}[section]
+\theoremstyle{breakplain}
+\newtheorem{theorem}{Theorem}[section]
+\newtheorem{lemma}{Lemma}[section]
+\newtheorem{proposition}{Proposition}[section]
+\newtheorem{corollary}{Corollary}[section]
+\theoremstyle{remark}
+\newtheorem*{remark}{Remark}
+
+% Colored boxes
+\tcolorboxenvironment{definition}{
+  enhanced, breakable,
+  colback=blue!5, colframe=blue!60!black,
+  boxrule=0.6pt, arc=2mm,
+  left=2mm, right=2mm, top=1mm, bottom=1mm
+}
+\tcolorboxenvironment{theorem}{
+  enhanced, breakable,
+  colback=red!5, colframe=red!60!black,
+  boxrule=0.6pt, arc=2mm,
+  left=2mm, right=2mm, top=1mm, bottom=1mm
+}
+\tcolorboxenvironment{lemma}{
+  enhanced, breakable,
+  colback=orange!5, colframe=orange!70!black,
+  boxrule=0.6pt, arc=2mm,
+  left=2mm, right=2mm, top=1mm, bottom=1mm
+}
+\tcolorboxenvironment{example}{
+  enhanced, breakable,
+  colback=green!5, colframe=green!50!black,
+  boxrule=0.6pt, arc=2mm,
+  left=2mm, right=2mm, top=1mm, bottom=1mm
+}
+
+\title{Performance Evaluation Methods -- Notes}
+\author{Francesco Passino}
+\date{}
+
+\begin{document}
+\maketitle
+\tableofcontents
+\newpage
+
+\input{lessons/lesson02.tex}
+
+\end{document}

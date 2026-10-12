@@ -1,0 +1,93 @@
+\documentclass[11pt,a4paper]{article}
+
+% Language and fonts
+\usepackage[english]{babel}
+\usepackage[T1]{fontenc}
+\usepackage[margin=2.5cm]{geometry}
+\usepackage[expansion=false]{microtype}
+
+% Math
+\usepackage{amsmath, amssymb, amsthm, mathtools}
+\usepackage{bm}
+
+% Tables and lists
+\usepackage{booktabs}
+\usepackage{enumitem}
+\usepackage{array}
+
+% Graphics
+\usepackage{graphicx}
+\usepackage{tikz}
+\usetikzlibrary{arrows.meta, positioning, quotes, automata}
+\usepackage{pgfplots}
+\pgfplotsset{compat=1.18}
+\usepgfplotslibrary{statistics, fillbetween}
+
+% Algorithms
+\usepackage[english,ruled,vlined]{algorithm2e}
+
+% Colors and boxes
+\usepackage{xcolor}
+\usepackage[most]{tcolorbox}
+
+% Code listings
+\usepackage{listings}
+\lstset{basicstyle=\ttfamily\small, breaklines=true, columns=fullflexible,
+  frame=single, rulecolor=\color{black!30}, keepspaces=true, showstringspaces=false}
+
+% Links (keep these last)
+\usepackage[colorlinks=true, linkcolor=blue!50!black, urlcolor=blue!50!black]{hyperref}
+\usepackage{cleveref}
+
+% Shortcuts
+\newcommand{\s}{\textit}
+\newcommand{\g}{\texttt}
+\newcommand{\R}{\mathbb{R}}
+\newcommand{\N}{\mathbb{N}}
+\newcommand{\Z}{\mathbb{Z}}
+\newcommand{\E}{\mathbb{E}}
+\newcommand{\norm}[1]{\left\lVert #1 \right\rVert}
+\DeclareMathOperator{\Var}{Var}
+\DeclareMathOperator{\Cov}{Cov}
+\DeclareMathOperator*{\argmin}{arg\,min}
+\DeclareMathOperator*{\argmax}{arg\,max}
+
+% Theorem-like environments (shared counter)
+\newtheoremstyle{breakdef}{\topsep}{\topsep}{\normalfont}{}{\bfseries}{.}{\newline}{}
+\newtheoremstyle{breakplain}{\topsep}{\topsep}{\itshape}{}{\bfseries}{.}{\newline}{}
+
+\theoremstyle{breakdef}
+\newtheorem{definition}{Definition}[section]
+\newtheorem{example}[definition]{Example}
+\theoremstyle{breakplain}
+\newtheorem{theorem}[definition]{Theorem}
+\newtheorem{lemma}[definition]{Lemma}
+\newtheorem{proposition}[definition]{Proposition}
+\newtheorem{corollary}[definition]{Corollary}
+\theoremstyle{remark}
+\newtheorem*{remark}{Remark}
+
+% Colored boxes
+\tcbset{notebox/.style={enhanced, breakable,
+  colback=#1!5, colframe=#1!60!black,
+  boxrule=0.6pt, arc=2mm,
+  left=2mm, right=2mm, top=1mm, bottom=1mm}}
+\tcolorboxenvironment{definition}{notebox=blue}
+\tcolorboxenvironment{theorem}{notebox=red}
+\tcolorboxenvironment{lemma}{notebox=orange}
+\tcolorboxenvironment{example}{notebox=green}
+\tcolorboxenvironment{proposition}{notebox=violet}
+\tcolorboxenvironment{corollary}{notebox=teal}
+
+\title{Performance Evaluation Methods -- Notes}
+\author{Francesco Passino}
+\date{}
+
+\begin{document}
+\maketitle
+\tableofcontents
+\newpage
+
+\input{lessons/lesson02.tex}
+
+\end{document}
