@@ -1,0 +1,50 @@
+# --- File temporanei LaTeX ---
+*.aux
+*.log
+*.out
+*.toc
+*.lof
+*.lot
+*.fls
+*.fdb_latexmk
+*.synctex.gz
+*.synctex(busy)
+*.synctex.gz(busy)
+*.bbl
+*.blg
+*.bcf
+*.run.xml
+*.idx
+*.ind
+*.ilg
+*.glo
+*.gls
+*.glg
+*.acn
+*.acr
+*.alg
+*.nav
+*.snm
+*.vrb
+*.xdv
+*.dvi
+*.maf
+*.mtc*
+*.thm
+*.listing
+_minted*/
+*.pyg
+
+# --- PDF ---
+# Esclusi sia i PDF compilati (main.pdf) sia il materiale didattico in docs/.
+# Per tracciare un PDF specifico (es. una figura): !percorso/figura.pdf
+*.pdf
+
+# --- Editor e sistema operativo ---
+.vscode/
+.idea/
+*.swp
+*~
+.DS_Store
+Thumbs.db
+desktop.ini
