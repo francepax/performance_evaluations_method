@@ -1,0 +1,53 @@
+% !TEX root = ../main.tex
+\subsection{How to build a good simulator -- lessons 29/09/2026}
+
+to build a good simulator, we need to define some essential components.
+\subsubsection{Events}
+
+An event is represented by a data structure including a \textbf{firing time} field. We also include a \textbf{priority} field, which allow us to choose the event to schedule if two events append at the same time. 
+When we have a set of events, we need another data structure to store them. 
+Usually we use an event queue, possibly sorted by firing time. The minimum operations on the event queue are:
+\begin{itemize} 
+\item \textbf{Extraction} of the nearest future event.
+\item \textbf{Insertion} in order of a new event into the queue.
+\item \textbf{Deletion} of an event from the queue.
+\end{itemize}
+
+A simple implementation of an event queue is a linked list, where the events are sorted by firing time. For the sorted list we have a complexity of $O(n)$ for insertion and deletion, and $O(1)$ for extraction.  
+We will see other possible better implementations of the event queue in the next lessons. In general handling the event queue is a big part of the total complexity
+of the simulator. To have fast and scalable simulators, we need to have a fast event queue implementation. Some commonly used data structures are \textit{min-heap} trees and \textit{calendar queues}.
+
+\subsubsection{min-heap trees}
+They are binary trees with the following properties:
+\begin{itemize}
+\item The value of each node is less than or equal to the values of its children.
+\item The tree is complete, i.e., all levels are completely filled except possibly for the last level, which is filled from left to right. So, depth $O(\log n)$.
+\end{itemize}
+A min-heap tree can be implemented using an array, where the root is at index 0, and for each node at index $i$, its left child is at index $2i + 1$ and its right child is at index $2i + 2$. 
+The parent of a node at index $i$ can be found at index $\lfloor (i - 1) / 2 \rfloor$. Implementing a min-heap tree using an array allows for efficient advantages in terms of memory usage and cache performance. 
+
+Implementing the event queue using a min-heap tree allows for efficient insertion and extraction of events. This is because the first element of the array is the closest in the future so for extraction we just extract from the head. 
+After the extraction, we need to restore the heap property by performing the following steps:
+\begin{enumerate}
+\item Replace the root of the heap with the last element in the array.
+\item swap the root with its smallest child until the heap property is restored.
+\end{enumerate}
+The complexity of this operation is $O(\log n)$.
+\\
+If we need to insert a new event, we can add it to the end of the array and then swap it with its parent until the heap property is restored. The complexity of this operation is also $O(\log n)$.
+\\
+If we delete an event from the queue, we first need to find the event in the array, which has a complexity of $O(n)$. Then we need to "reheapify" the tree, which has a complexity of $O(\log n)$. So the total complexity of deletion is $O(n)$. Luckily teh deletion is not that common in simulation.
+\subsubsection{Statistical counters}
+statistical counters are used to collect information about the simulation. They can be used to compute averages, variances, and other statistics about the events that occur during the simulation.
+
+\subsubsection{Functions}
+We need a set of functions to realize the simulation. The main functions are:
+
+\begin{itemize}
+\item \textbf{Initialization}: assigning the initial values to the variables and data structures used in the simulation.
+\item \textbf{Event scheduling}: schedule the next event to occur in the simulation.
+\item \textbf{Event handling}: update the state and the statistical variables. Possibly insert new events in the event queue.
+\item \textbf{Statistics computation}: compute the statistics of interest at the end of the simulation.
+\end{itemize}
+
+We have special handlers, such as \textbf{init}, which is called at the beginning of the simulation to initialize the system and put the first event in the event queue.

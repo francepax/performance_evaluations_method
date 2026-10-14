@@ -1,52 +1,149 @@
-\subsection{How to build a good simulator -- lessons 29/09/2026}
+% !TEX root = ../main.tex
+\section{Lesson 02 --- 14/10/2026}
 
-to build a good simulator, we need to define some essential components.
-\subsubsection{Events}
+\subsection{Giving inputs to the simulator}
 
-An event is represented by a data structure including a \textbf{firing time} field. We also include a \textbf{priority} field, which allow us to choose the event to schedule if two events append at the same time. 
-When we have a set of events, we need another data structure to store them. 
-Usually we use an event queue, possibly sorted by firing time. The minimum operations on the event queue are:
-\begin{itemize} 
-\item \textbf{Extraction} of the nearest future event.
-\item \textbf{Insertion} in order of a new event into the queue.
-\item \textbf{Deletion} of an event from the queue.
-\end{itemize}
+We can have \g{trace-driven} simulation, where the input is taken from a trace obtained by measuring the real system. A second approach is \g{self-driven} simulation, where inputs are artificially generated as random inputs from a probability distribution. To find the correct distribution we can gather data from the real system and perform statistical analysis (goodness-of-fit tests), read existing papers on the subject or use common sense.
 
-A simple implementation of an event queue is a linked list, where the events are sorted by firing time. For the sorted list we have a complexity of $O(n)$ for insertion and deletion, and $O(1)$ for extraction.  
-We will see other possible better implementations of the event queue in the next lessons. In general handling the event queue is a big part of the total complexity
-of the simulator. To have fast and scalable simulators, we need to have a fast event queue implementation. Some commonly used data structures are \textit{min-heap} trees and \textit{calendar queues}.
-
-\subsubsection{min-heap trees}
-They are binary trees with the following properties:
+\subsubsection{Trace-driven simulation}
+Pros:
 \begin{itemize}
-\item The value of each node is less than or equal to the values of its children.
-\item The tree is complete, i.e., all levels are completely filled except possibly for the last level, which is filled from left to right. So, depth $O(\log n)$.
+\item \g{Real-life case study}.
+\item Good for \s{validation} purposes.
+\item It might be the only option (e.g., compressed video, which is hard to model with synthetic generators).
 \end{itemize}
-A min-heap tree can be implemented using an array, where the root is at index 0, and for each node at index $i$, its left child is at index $2i + 1$ and its right child is at index $2i + 2$. 
-The parent of a node at index $i$ can be found at index $\lfloor (i - 1) / 2 \rfloor$. Implementing a min-heap tree using an array allows for efficient advantages in terms of memory usage and cache performance. 
 
-Implementing the event queue using a min-heap tree allows for efficient insertion and extraction of events. This is because the first element of the array is the closest in the future so for extraction we just extract from the head. 
-After the extraction, we need to restore the heap property by performing the following steps:
+Cons:
+\begin{itemize}
+\item \g{Overhead}: we need to obtain the trace.
+\item \g{Storage}: the trace file could be big.
+\item \g{Lack of generality}: traces are only for one specific case.
+\item \g{Inflexibility}: traces cannot be tuned for other problems.
+\end{itemize}
+
+\subsubsection{Self-driven simulation}
+Pros:
+\begin{itemize}
+\item \g{Compactness}.
+\item \g{Known statistical properties}.
+\item \g{Tunability}.
+\end{itemize}
+
+Cons:
+\begin{itemize}
+\item Identification of the right distributions may be difficult or even impossible.
+\end{itemize}
+
+If it's impossible to derive a distribution we can use an \g{empirical PMF (EPMF)} from available samples. With this approach we may have problems in defining ranges and bins (they influence the PMF), and we can have overflowing samples (\s{censored data}). To take into account the probability of values larger than the range of the EPMF, we can add an exponential tail to the right. We will use this approach only if it's the only option available, because we will have loss of information, we may need a lot of storage to memorize it and tuning is tricky.
+
+\subsubsection{Mixed approach}
+When the simulator has multiple inputs, we can mix the two approaches. For example:
+\begin{itemize}
+\item MPEG video packets (obtained from a real video file) transmitted to nodes that move according to a theoretical distribution.
+\item Exponentially distributed packets transmitted to nodes that move along predetermined trajectories (based on real system observations).
+\end{itemize}
+
+\subsection{Generating random values from a distribution}
+
+We need to generate random values if we want to use self-driven simulation. Random values are used for input generation, but also inside the model itself (e.g., to decide whether a transmitted packet is correctly received at the destination). We will follow these two steps:
 \begin{enumerate}
-\item Replace the root of the heap with the last element in the array.
-\item swap the root with its smallest child until the heap property is restored.
+\item \g{Random number generation}: generate a random variable uniformly distributed within $[0,1)$.
+\item \g{Random variate generation}: transform the previously generated variable in order to meet the desired distribution.
 \end{enumerate}
-The complexity of this operation is $O(\log n)$.
-\\
-If we need to insert a new event, we can add it to the end of the array and then swap it with its parent until the heap property is restored. The complexity of this operation is also $O(\log n)$.
-\\
-If we delete an event from the queue, we first need to find the event in the array, which has a complexity of $O(n)$. Then we need to "reheapify" the tree, which has a complexity of $O(\log n)$. So the total complexity of deletion is $O(n)$. Luckily teh deletion is not that common in simulation.
-\subsubsection{Statistical counters}
-statistical counters are used to collect information about the simulation. They can be used to compute averages, variances, and other statistics about the events that occur during the simulation.
 
-\subsubsection{Functions}
-We need a set of functions to realize the simulation. The main functions are:
+\subsubsection{Random number generation}
+\g{Midsquare method}:
+\begin{enumerate}
+\item Start with a 4-digit positive integer $Z_0$.
+\item Square it to obtain an (up to) 8-digit integer, adding zeros to the left if needed.
+\item Take the middle 4 digits and call them $Z_1$.
+\item Place a decimal point at the left of $Z_1$ to obtain $U_1 \in [0,1)$.
+\item Repeat from step 2 with $Z_1$ as the starting number.
+\end{enumerate}
 
+\begin{example}
+Start with $Z_0 = 7182$ (the first four decimal digits of $e$):
+\begin{center}
+\begin{tabular}{cccc}
+\toprule
+$Z_{i-1}$ & $Z_{i-1}^2$ & $Z_i$ & $U_i$ \\
+\midrule
+7182 & 51581124 & 5811 & 0.5811 \\
+5811 & 33767721 & 7677 & 0.7677 \\
+7677 & 58936329 & 9363 & 0.9363 \\
+9363 & 87665769 & 6657 & 0.6657 \\
+\bottomrule
+\end{tabular}
+\end{center}
+The numbers look random. However, starting from $Z_0 = 1009$ we get 0180, 0324, 1049, 1004, 0080, 0064, 0040, 0016, 0002, 0000, and from there the sequence stays at $0$ forever.
+\end{example}
+
+This algorithm looks good but could quickly degenerate to 0, and also, is it actually random? The truth is that it is impossible to generate random numbers with a deterministic algorithm. Luckily we don't really need random numbers: we need something that generates numbers in $[0,1)$ that are uniformly distributed and uncorrelated. Of course, a good generator must be fast and parsimonious with memory usage, and we want it to be \g{reproducible}. This looks counterintuitive, but it is essential for debugging and fair comparison of alternatives. Finally, the generator should provide \g{separate streams} of random numbers: we can think of them as separate and independent generators, so that we can dedicate a particular stream to a particular source of randomness in the simulation.
+
+What we want are \g{pseudo-random} numbers, generated by a deterministic function $f$ of the previous values:
+\[
+x_n = f(x_{n-1}, x_{n-2}, \dots, x_0),
+\]
+starting from an input called \g{seed} ($x_0$; quite often only one seed is needed). If we use the same function and seed we always get the same results. Every such generator has a \g{period}: sooner or later it produces a value it has already produced, and from that point the sequence starts again (loop). To choose a good function $f$ we want subsequent values to be uncorrelated and uniformly distributed, $f$ to be efficiently computable, and the period to be large.
+
+\subsubsection{Linear Congruential Generators (LCGs)}
+This is an example of a good random number generator. Notice that the formula is not complex (complexity does not imply randomness).
+
+\begin{definition}[Linear congruential generator]
+\[
+x_n = (a \cdot x_{n-1} + b) \bmod m,
+\]
+where $0 < m$, $a < m$, $b < m$, $x_0 < m$. The numbers that appear to be IID $U(0,1)$ are $x_0/m, x_1/m, \dots, x_n/m$.
+\end{definition}
+
+We can have two cases of LCG depending on the parameter $b$:
 \begin{itemize}
-\item \textbf{Initialization}: assigning the initial values to the variables and data structures used in the simulation.
-\item \textbf{Event scheduling}: schedule the next event to occur in the simulation.
-\item \textbf{Event handling}: update the state and the statistical variables. Possibly insert new events in the event queue.
-\item \textbf{Statistics computation}: compute the statistics of interest at the end of the simulation.
+\item $b = 0$: \g{multiplicative LCG};
+\item $b > 0$: \g{mixed LCG}.
 \end{itemize}
 
-We have special handlers, such as \textbf{init}, which is called at the beginning of the simulation to initialize the system and put the first event in the event queue.
+\begin{example}
+Consider the LCG with $m = 16$, $a = 5$, $b = 3$ and $x_0 = 7$:
+\[
+x_n = (5 x_{n-1} + 3) \bmod 16.
+\]
+It generates $7, 6, 1, 8, 11, 10, 5, 12, 15, 14, 9, 0, 3, 2, 13, 4$, and then $x_{16} = 7$, $x_{17} = 6$, \dots{} From $n = 16$ to $31$ we obtain exactly the same values as from $n = 0$ to $15$, in the same order. Here $P = 16 = m$, consistent with the conditions below ($m = 2^4$, $a = 4 \cdot 1 + 1$, $b$ odd).
+\end{example}
+
+The period $P$ of the LCG is at most $m$ (it generates numbers in $\{0, \dots, m-1\}$), and it can be smaller depending on the other parameters. If $P = m$ then the LCG is said to have \g{full period}. With mixed LCG, sufficient conditions to have full period are:
+\begin{itemize}
+\item $m$ is a (large) power of two;
+\item $a = 4c + 1$, for some integer $c$;
+\item $b$ is an odd number.
+\end{itemize}
+
+For multiplicative LCG it is impossible to obtain full period, because $0$ is mapped to $0$: if the seed is $0$ we remain stuck at $0$, and a sequence starting from a nonzero seed can never reach $0$, so $P \le m - 1$. If we choose $m$ to be a power of two, the period cannot be larger than $m/4$. This max period $m/4$ is obtained with $a = 8c \pm 3$ and an odd initial seed.
+
+For both LCGs we can choose $m$ to be a power of 2 to increase the performance of the generator, since the modulo operation is easy.
+
+\subsubsection{Independent streams of random numbers}
+In case of multiple inputs (e.g., packet arrival times and packet sizes) we need to generate several streams of random numbers. If we use the same stream for different inputs, we cannot guarantee that the subsampled streams are uniform and uncorrelated. Moreover, changing one parameter of one input changes the values of all the others, which makes debugging and fair comparisons almost impossible. So we never use the same RNG for more than one thing: we use a replica of the same RNG for each input, and we seed each replica so that its substream starts in a different position of the main stream, far away in the period. If we need $n$ streams with less than $k$ numbers each and the period is $P \ge nk$, we can use the seeds
+\[
+s_i = x_{(i-1)k}, \qquad 1 \le i \le n.
+\]
+
+\subsection{Testing RNGs}
+
+The first thing we need to check is: are the numbers really uniformly distributed within $[0,1)$?
+
+We can answer this question with different tests:
+\begin{enumerate}
+\item \g{QQ plot}: we run one long sequence and plot its quantiles against the quantiles of $U(0,1)$. We need to obtain a straight line, and we check for deviations, especially at the tails.
+\item \g{Chi-square test} at a level $1-\alpha = 0.9$: we draw a large sample of size $n$ and divide $[0,1)$ into $k$ buckets of equal width, such that $n/k > 10$. Bucket $i$ contains $o_i$ elements, while we expect $e_i = n/k$. We compute
+\[
+D = \sum_{i=1}^{k} \frac{(e_i - o_i)^2}{e_i},
+\]
+and if $D > \chi^2_{k-1,1-\alpha}$ we reject the $U(0,1)$ hypothesis. It works with large samples ($\sim 1000$), and its result depends a lot on the choice of the buckets.
+\item \g{Kolmogorov--Smirnov test}: like the chi-square test, but we compare the ECDF of the sample with the theoretical CDF. We draw a (not too large) sample, sort it, and compute the maximum vertical distances $D^+$ and $D^-$ between the ECDF and the CDF of $U(0,1)$. If either is larger than the value of the KS distribution (from tables, it depends on $n$ and on the confidence level), we reject the $U(0,1)$ hypothesis. It works better than the chi-square test with small samples.
+\end{enumerate}
+
+The second property we need to check is: are the values independent?
+
+We can check correlation numerically with a \g{correlogram} (we will see it at the end of the course), or use visual inspection with \g{lag plots}, i.e., we plot the pairs $(x_i, x_{i+k})$ for various lags $k$. If the graphs show any trend, the numbers are correlated.
+
+Todo fino alla slide 71
