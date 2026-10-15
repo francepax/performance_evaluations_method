@@ -34,7 +34,7 @@ Cons:
 \item Identification of the right distributions may be difficult or even impossible.
 \end{itemize}
 
-If it's impossible to derive a distribution we can use an \g{empirical PMF (EPMF)} from available samples. With this approach we may have problems in defining ranges and bins (they influence the PMF), and we can have overflowing samples (\s{censored data}). To take into account the probability of values larger than the range of the EPMF, we can add an exponential tail to the right. We will use this approach only if it's the only option available, because we will have loss of information, we may need a lot of storage to memorize it and tuning is tricky.
+If it's impossible to derive a distribution we can use an \g{empirical PMF (EPMF)} from available samples. With this approach we may have problems in defining ranges and bins (they influence the PMF), and we can have overflowing samples (\s{censored data}). To take into account the probability of values larger than the range of the EPMF, we can add an exponential tail to the right. We will use this approach only if it's the only option available, because we will have loss of information, we may need a lot of storage to store it and tuning is tricky.
 
 \subsubsection{Mixed approach}
 When the simulator has multiple inputs, we can mix the two approaches. For example:
@@ -110,27 +110,28 @@ x_n = (5 x_{n-1} + 3) \bmod 16.
 It generates $7, 6, 1, 8, 11, 10, 5, 12, 15, 14, 9, 0, 3, 2, 13, 4$, and then $x_{16} = 7$, $x_{17} = 6$, \dots{} From $n = 16$ to $31$ we obtain exactly the same values as from $n = 0$ to $15$, in the same order. Here $P = 16 = m$, consistent with the conditions below ($m = 2^4$, $a = 4 \cdot 1 + 1$, $b$ odd).
 \end{example}
 
-The period $P$ of the LCG is at most $m$ (it generates numbers in $\{0, \dots, m-1\}$), and it can be smaller depending on the other parameters. If $P = m$ then the LCG is said to have \g{full period}. With mixed LCG, sufficient conditions to have full period are:
+The period $P$ of the LCG is at most $m$ (it generates numbers in $\{0, \dots, m-1\}$), and it can be smaller depending on the other parameters. If $P = m$ then the LCG is said to have \g{full period}. With a mixed LCG, sufficient conditions to have full period are:
 \begin{itemize}
 \item $m$ is a (large) power of two;
 \item $a = 4c + 1$, for some integer $c$;
 \item $b$ is an odd number.
 \end{itemize}
 
-For multiplicative LCG it is impossible to obtain full period, because $0$ is mapped to $0$: if the seed is $0$ we remain stuck at $0$, and a sequence starting from a nonzero seed can never reach $0$, so $P \le m - 1$. If we choose $m$ to be a power of two, the period cannot be larger than $m/4$. This max period $m/4$ is obtained with $a = 8c \pm 3$ and an odd initial seed.
+For a multiplicative LCG it is impossible to obtain full period, because $0$ is mapped to $0$: if the seed is $0$ we remain stuck at $0$, and a sequence starting from a nonzero seed can never reach $0$, so $P \le m - 1$. If we choose $m$ to be a power of two, the period cannot be larger than $m/4$. This max period $m/4$ is obtained with $a = 8c \pm 3$ and an odd initial seed.
 
-For both LCGs we can choose $m$ to be a power of 2 to increase the performance of the generator, since the modulo operation is easy.
+For both types of LCG we can choose $m$ to be a power of 2 to increase the performance of the generator, since the modulo operation is easy.
 
 If the conditions for full period are met, any initial seed will do; otherwise the period depends on the seed. In general we should avoid even seeds (with multiplicative LCGs), zero, and unpredictable seeds such as the clock value or the process ID, which make the simulation impossible to reproduce.
 
 \subsubsection{Independent streams of random numbers}
-In case of multiple inputs (e.g., packet arrival times and packet sizes) we need to generate several streams of random numbers. If we use the same stream for different inputs, we cannot guarantee that the subsampled streams are uniform and uncorrelated. Moreover, changing one parameter of one input changes the values of all the others, which makes debugging and fair comparisons almost impossible. So we never use the same RNG for more than one thing: we use a replica of the same RNG for each input, and we seed each replica so that its substream starts in a different position of the main stream, far away in the period. If we need $n$ streams with less than $k$ numbers each and the period is $P \ge nk$, we can use the seeds
+In case of multiple inputs (e.g., packet arrival times and packet sizes) we need to generate several streams of random numbers. If we use the same stream for different inputs, we cannot guarantee that the subsampled streams are uniform and uncorrelated. Moreover, changing one parameter of one input changes the values of all the others, which makes debugging and fair comparisons almost impossible. So we never use the same RNG for more than one thing: we use a replica of the same RNG for each input, and we seed each replica so that its substream starts in a different position of the main stream, far away in the period. If we need $n$ streams with at most $k$ numbers each and the period is $P \ge nk$, we can use the seeds
 \[
 s_i = x_{(i-1)k}, \qquad 1 \le i \le n.
 \]
 
 LCGs also have some known limits: every $x_i$ can be computed deterministically from $x_0$ (which is useful to find these seeds), the values can only be multiples of $1/m$, and tuples of subsequent values lie on a finite number of hyperplanes, so many sequences will never come out.
 
+\subsubsection{Other RNGs}
 We should never use the C/C++ \g{rand()} function in simulations: its algorithm is compiler-specific (so results are not portable), it is not guaranteed to pass any statistical test and it does not provide independent streams. Other RNG algorithms exist, such as quadratic congruential, multiplicative recursive, Tausworthe and \g{Mersenne-Twister} generators; the latter has a huge period ($2^{19937} - 1$) but needs about 2\,KB of memory per instance.
 
 \subsection{Testing RNGs}
@@ -145,7 +146,7 @@ We can answer this question with different tests:
 D = \sum_{i=1}^{k} \frac{(e_i - o_i)^2}{e_i},
 \]
 and if $D > \chi^2_{k-1,1-\alpha}$ we reject the $U(0,1)$ hypothesis. It works with large samples ($\sim 1000$), and its result depends a lot on the choice of the buckets.
-\item \g{Kolmogorov--Smirnov test}: like the chi-square test, but we compare the ECDF of the sample with the theoretical CDF. We draw a (not too large) sample, sort it, and compute the maximum vertical distances $D^+$ and $D^-$ between the ECDF and the CDF of $U(0,1)$. If either is larger than the value of the KS distribution (from tables, it depends on $n$ and on the confidence level), we reject the $U(0,1)$ hypothesis. It works better than the chi-square test with small samples.
+\item \g{Kolmogorov--Smirnov test}: like the chi-square test, but we compare the ECDF of the sample with the theoretical CDF. We draw a (not too large) sample, sort it, and compute the maximum vertical distances $D^+$ and $D^-$ (multiplied by $\sqrt{n}$) between the ECDF and the CDF of $U(0,1)$. If either is larger than the value of the KS distribution (from tables, it depends on $n$ and on the confidence level), we reject the $U(0,1)$ hypothesis. It works better than the chi-square test with small samples.
 \end{enumerate}
 
 The second property we need to check is: are the values independent?
