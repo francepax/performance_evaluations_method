@@ -121,11 +121,17 @@ For multiplicative LCG it is impossible to obtain full period, because $0$ is ma
 
 For both LCGs we can choose $m$ to be a power of 2 to increase the performance of the generator, since the modulo operation is easy.
 
+If the conditions for full period are met, any initial seed will do; otherwise the period depends on the seed. In general we should avoid even seeds (with multiplicative LCGs), zero, and unpredictable seeds such as the clock value or the process ID, which make the simulation impossible to reproduce.
+
 \subsubsection{Independent streams of random numbers}
 In case of multiple inputs (e.g., packet arrival times and packet sizes) we need to generate several streams of random numbers. If we use the same stream for different inputs, we cannot guarantee that the subsampled streams are uniform and uncorrelated. Moreover, changing one parameter of one input changes the values of all the others, which makes debugging and fair comparisons almost impossible. So we never use the same RNG for more than one thing: we use a replica of the same RNG for each input, and we seed each replica so that its substream starts in a different position of the main stream, far away in the period. If we need $n$ streams with less than $k$ numbers each and the period is $P \ge nk$, we can use the seeds
 \[
 s_i = x_{(i-1)k}, \qquad 1 \le i \le n.
 \]
+
+LCGs also have some known limits: every $x_i$ can be computed deterministically from $x_0$ (which is useful to find these seeds), the values can only be multiples of $1/m$, and tuples of subsequent values lie on a finite number of hyperplanes, so many sequences will never come out.
+
+We should never use the C/C++ \g{rand()} function in simulations: its algorithm is compiler-specific (so results are not portable), it is not guaranteed to pass any statistical test and it does not provide independent streams. Other RNG algorithms exist, such as quadratic congruential, multiplicative recursive, Tausworthe and \g{Mersenne-Twister} generators; the latter has a huge period ($2^{19937} - 1$) but needs about 2\,KB of memory per instance.
 
 \subsection{Testing RNGs}
 
