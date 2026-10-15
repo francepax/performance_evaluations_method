@@ -146,4 +146,27 @@ The second property we need to check is: are the values independent?
 
 We can check correlation numerically with a \g{correlogram} (we will see it at the end of the course), or use visual inspection with \g{lag plots}, i.e., we plot the pairs $(x_i, x_{i+k})$ for various lags $k$. If the graphs show any trend, the numbers are correlated.
 
-Todo fino alla slide 71
+Many other tests are possible. Some are \g{experimental tests}, which test the generated sequence (e.g., the chi-square test in $k$ dimensions, $k = 2, 3, \dots$), others are \g{theoretical tests}, which test the algorithm itself (e.g., the \s{spectral test}). The underlying message is: never use an untested RNG.
+
+\subsection{Random variate generation}
+
+So far we have learned how to obtain a reliable stream of numbers uniformly distributed in $[0,1)$. Given such a stream, we can compute values for arbitrary distributions. Unfortunately, there is no general approach that works for every distribution. Some common methods are the \g{inverse transform} and the \g{convolution}.
+
+\subsubsection{Inverse transform}
+Suppose we need a sample $x$ from a random variable with a given CDF $F(x)$ that is continuous and strictly increasing, and let $F^{-1}$ be the inverse function of $F$. The method of inverse transform is:
+\begin{enumerate}
+\item generate $u \sim U[0,1)$;
+\item return $x = F^{-1}(u)$.
+\end{enumerate}
+The idea is simple: the codomain of a CDF is $[0,1]$, so a uniform number in $[0,1)$ can be mapped back to a value of the domain. We can use this method only if we are able to obtain $F^{-1}$.
+
+\begin{example}
+Suppose we want samples from an exponentially distributed random variable with mean $1/\lambda$. Its PDF and CDF are
+\[
+f(x) = \lambda e^{-\lambda x}, \qquad F(x) = 1 - e^{-\lambda x}, \qquad x \ge 0.
+\]
+We take $u$ uniformly distributed in $[0,1)$ and solve $u = 1 - e^{-\lambda x}$ for $x$:
+\[
+x = -\frac{1}{\lambda} \ln(1 - u).
+\]
+\end{example}
