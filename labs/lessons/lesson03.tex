@@ -1,0 +1,49 @@
+% !TEX root = ../main.tex
+\section{Lesson 03 --- 21/10/2026}
+
+\subsection{Random variate generation --- convolution}
+
+Sometimes we are unable to compute $F^{-1}$. For instance, the normal distribution $N(\mu, \sigma^2)$ has no closed-form CDF. In this case we can rely on the \g{Central Limit Theorem}: the sum of a sufficiently large number of IID RVs with finite mean and variance is approximately normally distributed. The \g{convolution method} is:
+\begin{enumerate}
+\item generate $Y_1, Y_2, \dots, Y_m \sim U(0,1)$;
+\item compute $X = Y_1 + Y_2 + \dots + Y_m$, then $X \approx N\left(\frac{m}{2}, \frac{m}{12}\right)$.
+\end{enumerate}
+It is called convolution method because the PDF of a sum of IID RVs is the convolution of the single PDFs.
+
+This method has two drawbacks:
+\begin{itemize}
+\item \g{Cost}: we need $m$ good draws of the RNG (in general at least 6--7) to produce just one normal sample.
+\item \g{Errors in the tails}: since uniforms are bounded, $X$ is bounded too, so we never observe values with a large modulus. To get very large values we would need a very large $m$, wasting many random numbers.
+\end{itemize}
+
+We can use these properties:
+\begin{enumerate}
+\item $X \approx N\left(\frac{m}{2}, \frac{m}{12}\right) \implies Z \approx N(0,1)$, with $Z = \dfrac{X - m/2}{\sqrt{m/12}}$;
+\item $Z \sim N(0,1) \implies Z' \sim N(\mu, \sigma^2)$, with $Z' = \mu + \sqrt{\sigma^2}\, Z$.
+\end{enumerate}
+
+Using these two properties we can choose the mean and the variance as we want.
+
+\subsection{Random variate generation --- practical cases}
+
+Each case starts by generating $U \sim U(0,1)$ and then returns a transformation of it.
+
+\subsubsection{Continuous RVs}
+\begin{itemize}
+\item \g{$U(a,b)$}: return $a + (b-a)\,U$.
+\item \g{Exponential($\lambda$)}: return $-\dfrac{\ln(1-U)}{\lambda}$.
+\item \g{Weibull($a,b$)}: return $b\,(-\ln U)^{1/a}$.
+\item \g{Pareto($a$)}: return $\dfrac{1}{U^{1/a}}$.
+\end{itemize}
+
+\subsubsection{Discrete RVs}
+\begin{itemize}
+\item \g{$U(a,b)$}: return $a + \lfloor (b-a+1)\,U \rfloor$.
+\item \g{Bernoulli($p$)}: return $1$ if $U \le p$, $0$ otherwise.
+\item \g{Geometric($p$)}: generate $E \sim \mathrm{Exp}(-\ln(1-p))$ and return $\lfloor E \rfloor$. This comes from the known relationship between the exponential and the geometric distribution.
+\item \g{Binomial($n,p$)}: generate $n$ Bernoulli($p$) RVs and return their sum. This is inefficient, especially for large $n$, so in practice another method is used.
+\end{itemize}
+
+\begin{remark}
+Random variate generation must be fast. If we write code for it, it should be highly optimized: operations involving only constants are performed once and their results are stored. More examples can be found in the Law--Kelton book.
+\end{remark}
