@@ -1,6 +1,6 @@
 # Performance Evaluation Methods — Notes
 
-LaTeX notes for the Performance Evaluation Methods course (University of Pisa), written lesson by lesson.
+LaTeX notes for the labratory of the Performance Evaluation Methods course (University of Pisa), written lesson by lesson. For the theory course notes I used the one provided by prof G. Stea.
 
 The compiled notes are in [`labs/main.pdf`](labs/main.pdf).
 
@@ -11,7 +11,7 @@ The compiled notes are in [`labs/main.pdf`](labs/main.pdf).
 - `labs/exercises/`: code for the lab exercises.
 - `labs/main.pdf`: the compiled notes.
 
-The course material (slides) is kept in `docs/` and is not part of the repository.
+The course material (professor's notes) is kept in `docs/` and is not part of the repository.
 
 ## Build
 
